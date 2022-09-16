@@ -6,8 +6,9 @@ put melons in a shopping cart.
 Authors: Joel Burton, Christian Fernandez, Meggie Mahnken, Katie Byers.
 """
 
-from flask import Flask, render_template, redirect, flash
+from flask import Flask, render_template, redirect, flash, session, request, url_for
 import jinja2
+import customers
 
 import melons
 
@@ -25,6 +26,9 @@ app.jinja_env.undefined = jinja2.StrictUndefined
 # This configuration option makes the Flask interactive debugger
 # more useful (you should remove this line in production though)
 app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = True
+
+
+
 
 
 @app.route("/")
@@ -50,7 +54,7 @@ def show_melon(melon_id):
     Show all info about a melon. Also, provide a button to buy that melon.
     """
 
-    melon = melons.get_by_id("meli")
+    melon = melons.get_by_id(melon_id)
     print(melon)
     return render_template("melon_details.html",
                            display_melon=melon)
@@ -59,6 +63,8 @@ def show_melon(melon_id):
 @app.route("/cart")
 def show_shopping_cart():
     """Display content of shopping cart."""
+
+
 
     # TODO: Display the contents of the shopping cart.
 
@@ -89,6 +95,8 @@ def add_to_cart(melon_id):
     page and display a confirmation message: 'Melon successfully added to
     cart'."""
 
+    # We might have to connect this to information collected on the melon_details.html file.
+
     # TODO: Finish shopping cart functionality
 
     # The logic here should be something like:
@@ -118,7 +126,28 @@ def process_login():
     dictionary, look up the user, and store them in the session.
     """
 
-    # TODO: Need to implement this!
+
+
+    email = request.form['email']
+    password = request.form['password']
+
+
+    customer = customers.get_by_email(email)
+
+
+    if not customer:
+        flash('Customer not found')
+        return redirect("/login")
+
+    elif customer.password != password:
+        flash('Customer not found')
+        return redirect("/login")
+
+
+    session['login'] = customer.email
+    return redirect('/melons')
+
+
 
     # The logic here should be something like:
     #
@@ -132,7 +161,6 @@ def process_login():
     # - if they don't, flash a failure message and redirect back to "/login"
     # - do the same if a Customer with that email doesn't exist
 
-    return "Oops! This needs to be implemented"
 
 
 @app.route("/checkout")
